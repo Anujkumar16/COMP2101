@@ -3,7 +3,7 @@
 # this script displays some host identification information for a Linux machine
 #
 # Sample output:
-#   Hostname      : zubu
+#   Hostname      : Windows
 #   LAN Address   : 192.168.2.2
 #   LAN Name      : net2-linux
 #   External IP   : 1.2.3.4
@@ -69,11 +69,11 @@ EOF
 # Per-interface report
 #####
 
-calculate=$(lshw -class network | awk '/logical name:/{print $3}' | wc -l)
+N=$(lshw -class network | awk '/logical name:/{print $3}' | wc -l)
 
 # define the interface being summarized
 
-for((w=1;w<=$calculate;w+=1));
+for((w=1;w<=$N;w+=1));
 do
   interface=$(lshw -class network |awk '/logical name:/{print $3}' |awk -v z=$w 'NR==z{print $1; exit}')
 
