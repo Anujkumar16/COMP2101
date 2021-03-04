@@ -84,9 +84,6 @@ External_Name=$(getent hosts $External_IP | awk '{print $2}')
 Router_Address=$(ip r | awk '/default /{print $3}')
 Router_Name=$(getent hosts $Router_Address | awk '{print $2}')
 
-#Router_Address=$(ip r | awk '/via/{print $3}')
-#Router_Name=$(route|awk '/default/ {print $2}')
-
 echo "Host Information"
 echo "Hostname        :"$Hostname
 echo "LAN Address     :" $LAN_Address
