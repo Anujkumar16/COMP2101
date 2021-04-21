@@ -1,0 +1,1 @@
+Get-Ciminstance Win32_NetworkAdapterConfiguration | where-object IPenabled | Select-Object Description, Index, @{n="Subnet Mask";e={$_.IPSubnet}}, @{n="DNS Domain Name";e={$_.DNSHostName}}, @{n="DNS Server";e={$_.DNSServerSearchOrder}}, IPAddress | format-table
