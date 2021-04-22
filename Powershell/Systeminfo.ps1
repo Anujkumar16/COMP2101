@@ -12,48 +12,37 @@ hardwareInfo
 "*******************************************************"
 function OperatingsysInfo{
 "Operating System Name and Version"
-get-ciminstance win32_computersystem | 
+get-ciminstance win32_operatingsystem | 
 foreach{
-New-Object -Typename psobject -property @{Name=$_.Name
-					  Version=switch($_.Version)
-{
-empty{"Data unavailable"}
-default{$_.version}
-}
+New-Object -Typename psobject -Property @{
+                        Name=$_.Caption
+					    Version=$_.Version}
 
-}}|
-Format-list Name, Version
+}|Format-list Name, Version
 }
 OperatingsysInfo
+
 "*********************************************************"
 function ProcessorInfo{
 "Processor Description"
 get-ciminstance win32_processor |
 foreach {
-new-object -typename psobject -property @{Description=switch($_.Description)
-				                                 	 {empty{"Data Unavailable"}
-                                                      default{$_}                                            
-                                                     }
-                                          Numberofcores=switch($_.NumberOfCores)
-				                                 	 {empty{"Data Unavailable"}
-                                                      default{$_}                                            
-                                                     }
-                                          L1CacheSize=switch($_.L1CacheSize)
-				                                 	 {empty{"Data Unavailable"}
-                                                      default{$_}                                            
-                                                     }
-                                          L2CacheSize=switch($_.L2CacheSize)
-				                                 	 {empty{"Data Unavailable"}
-                                                      default{$_}                                            
-                                                     }
-                                          L3CacheSize=switch($_.L3CacheSize)
-				                                 	 {empty{"Data Unavailable"}
-                                                      default{$_.L3CacheSize}                                            
-                                                     }
+new-object -typename psobject -property @{
+                                          Description=$_.Description
+                                          Numberofcores=$_.NumberOfCores                                         
+                                                     
+                                          L1CacheSize=if($_.L1CacheSize -eq $empty)
+                                                            {"Data Unavailable"}
+                                                            else {$_.L1CacheSize/1Mb}
+                                          L2CacheSize=if($_.L1CacheSize -eq $empty)
+                                                            {"Data Unavailable"}
+                                                            else {$_.L2CacheSize/1Mb}
+                                          L3CacheSize=if($_.L1CacheSize -eq $empty)
+                                                            {"Data Unavailable"}
+                                                            else {$_.L3CacheSize/1Mb}                                             
                                           }
- }|
-format-list Description, NumberOfCores, L1CacheSize, L2CacheSize, L3CacheSize
-}
+ }|format-list Description, NumberOfCores, L1CacheSize, L2CacheSize, L3CacheSize
+ }
 ProcessorInfo
 "****************************************************************"
 Function RAMSummary{
@@ -61,16 +50,16 @@ Function RAMSummary{
 $totalcapacity=0
 get-ciminstance win32_physicalmemory | 
 foreach {
-New-object -TypeName psobject -property @{Manufacturer=$_.Manufacturer
+New-object -TypeName psobject -property @{Vendor=$_.Manufacturer
                                           Description=$_.Description
-                                          "Size(MB)"=$_.Capacity/1mb
+                                          "Size(Mb)"=$_.Capacity/1mb
                                           Bank=$_.Banklabel
                                           Slot=$_.devicelocator
                                           }
-                                          $totalcapacity+=$_Capacity/1mb
+                                          $totalcapacity+=$_.Capacity/1mb
                                           }|
-Format-table Manufacturer, Description, "Size(MB)", Bank, Slot
-"Total RAM:${totalcapacity}MB"
+Format-table Vendor, Description, "Size(Mb)", Bank, Slot
+"Total RAM: $totalcapacity Mb"
 }
 RAMSummary
 "****************************************************"
@@ -112,19 +101,22 @@ Adapterconf
 "********************************************************************************"
 function videocard{
 "video card Info"
-Get-CimInstance win32_videocontroller | 
+Get-wmiobject -class win32_videocontroller | 
 foreach {
-New-Object -TypeName psobject -Property @{ Vendor=$_.Name
+$Vertical=$_.CurrentVerticalResolution -as [string]
+$Horizontal=$_.CurrentHorizontalResolution -as [string]
+$CurrentReso=$Horizontal+"x"+$Vertical
+New-Object -TypeName psobject -Property @{ Vendor=if($_.Manufacturer -eq $empty)
+                                                       {"Data Unavailable"}
+                                                       else{$_.Manufacturer}
+                                          
                                           Description=$_.Description
-                                          Verticalpixels=$_.CurrentVerticalResolution
-                                          Horizontalpixels=$_.CurrentHorizontalResolution
-                                          Currentvideoresolution=$_.VideoModeDescription
+                                          "CurrentVideoResolution"=$CurrentReso
                                           }
+                                          
 
-         }| format-list Vendor, Description, Horizontalpixels, Verticalpixels, Currentvideoresolution 
-         
+         }| format-list Vendor, Description, "CurrentVideoResolution"
         }
 
 videocard
          
-
